@@ -43,12 +43,8 @@ export default function Home() {
 
       const outBytes = await outPdf.save();
 
-      const ab = outBytes.buffer.slice(
-        outBytes.byteOffset,
-        outBytes.byteOffset + outBytes.byteLength
-      );
-
-      const blob = new Blob([ab], { type: "application/pdf" });
+      // Uint8Array version (keeps TypeScript happy on Vercel builds)
+      const blob = new Blob([new Uint8Array(outBytes)], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
@@ -89,6 +85,7 @@ export default function Home() {
             Adds blank space on the right and bottom while keeping text searchable.
           </p>
         </div>
+
         <nav style={{ display: "flex", gap: 12 }}>
           <Link href="/help">Help</Link>
           <Link href="/privacy">Privacy</Link>
