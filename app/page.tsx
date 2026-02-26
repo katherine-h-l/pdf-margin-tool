@@ -2,7 +2,7 @@
 
 import { PDFDocument } from "pdf-lib";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -10,8 +10,6 @@ export default function Home() {
   const [extraBottomIn, setExtraBottomIn] = useState<number>(1);
   const [isWorking, setIsWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const canConvert = useMemo(() => !!file && !isWorking, [file, isWorking]);
 
@@ -44,7 +42,13 @@ export default function Home() {
       }
 
       const outBytes = await outPdf.save();
-      const blob = new Blob([outBytes], { type: "application/pdf" });
+
+      const ab = outBytes.buffer.slice(
+        outBytes.byteOffset,
+        outBytes.byteOffset + outBytes.byteLength
+      );
+
+      const blob = new Blob([ab], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
@@ -59,15 +63,6 @@ export default function Home() {
     } finally {
       setIsWorking(false);
     }
-  }
-
-  function openFilePicker() {
-    fileInputRef.current?.click();
-  }
-
-  function formatFileLabel(f: File | null) {
-    if (!f) return "Add file";
-    return f.name.length > 42 ? `${f.name.slice(0, 30)}…${f.name.slice(-10)}` : f.name;
   }
 
   return (
@@ -103,47 +98,11 @@ export default function Home() {
       <section style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
         <div style={{ border: "1px solid #e6e6e6", borderRadius: 12, padding: 16 }}>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Upload PDF</label>
-
           <input
-            ref={fileInputRef}
             type="file"
             accept="application/pdf"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            style={{ display: "none" }}
           />
-
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button
-              type="button"
-              onClick={openFilePicker}
-              style={{
-                border: "1px solid #222",
-                borderRadius: 10,
-                padding: "10px 12px",
-                background: "#fff",
-                cursor: "pointer",
-                fontWeight: 600,
-              }}
-            >
-              {formatFileLabel(file)}
-            </button>
-
-            {file && (
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: 10,
-                  padding: "10px 12px",
-                  background: "#fff",
-                  cursor: "pointer",
-                }}
-              >
-                Clear
-              </button>
-            )}
-          </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
             <div>
@@ -159,6 +118,7 @@ export default function Home() {
                 style={{ width: "100%", padding: 8, borderRadius: 8, border: "1px solid #ddd" }}
               />
             </div>
+
             <div>
               <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>
                 Bottom space (inches)
@@ -200,7 +160,7 @@ export default function Home() {
         <aside style={{ border: "1px solid #e6e6e6", borderRadius: 12, padding: 16 }}>
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Ad space</div>
           <div style={{ color: "#666", fontSize: 14, lineHeight: 1.4 }}>
-            When you are approved for ads, you will paste your ad code here or into a dedicated component.
+            When you are approved for ads, you can paste ad code here or move it into a component.
           </div>
 
           <div
