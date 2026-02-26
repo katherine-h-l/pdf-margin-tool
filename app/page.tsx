@@ -1,65 +1,228 @@
-import Image from "next/image";
+"use client";
+
+import { PDFDocument } from "pdf-lib";
+import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
 
 export default function Home() {
+  const [file, setFile] = useState<File | null>(null);
+  const [extraRightIn, setExtraRightIn] = useState<number>(2);
+  const [extraBottomIn, setExtraBottomIn] = useState<number>(1);
+  const [isWorking, setIsWorking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const canConvert = useMemo(() => !!file && !isWorking, [file, isWorking]);
+
+  async function handleConvert() {
+    if (!file) return;
+
+    setIsWorking(true);
+    setError(null);
+
+    try {
+      const inputBytes = await file.arrayBuffer();
+      const srcPdf = await PDFDocument.load(inputBytes);
+      const outPdf = await PDFDocument.create();
+
+      const extraRightPts = extraRightIn * 72;
+      const extraBottomPts = extraBottomIn * 72;
+
+      const pageCount = srcPdf.getPageCount();
+
+      for (let i = 0; i < pageCount; i++) {
+        const [embedded] = await outPdf.embedPages([srcPdf.getPage(i)]);
+        const { width, height } = embedded;
+
+        const newPage = outPdf.addPage([width + extraRightPts, height + extraBottomPts]);
+
+        newPage.drawPage(embedded, {
+          x: 0,
+          y: extraBottomPts,
+        });
+      }
+
+      const outBytes = await outPdf.save();
+      const blob = new Blob([outBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "with_margins.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setError(e?.message ? String(e.message) : "Conversion failed.");
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  function openFilePicker() {
+    fileInputRef.current?.click();
+  }
+
+  function formatFileLabel(f: File | null) {
+    if (!f) return "Add file";
+    return f.name.length > 42 ? `${f.name.slice(0, 30)}…${f.name.slice(-10)}` : f.name;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main
+      style={{
+        maxWidth: 920,
+        margin: "0 auto",
+        padding: 24,
+        fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial",
+      }}
+    >
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          gap: 16,
+          marginBottom: 20,
+        }}
+      >
+        <div>
+          <h1 style={{ margin: 0, fontSize: 28 }}>PDF Margin Tool</h1>
+          <p style={{ margin: "6px 0 0", color: "#555" }}>
+            Adds blank space on the right and bottom while keeping text searchable.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <nav style={{ display: "flex", gap: 12 }}>
+          <Link href="/help">Help</Link>
+          <Link href="/privacy">Privacy</Link>
+        </nav>
+      </header>
+
+      <section style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
+        <div style={{ border: "1px solid #e6e6e6", borderRadius: 12, padding: 16 }}>
+          <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Upload PDF</label>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            style={{ display: "none" }}
+          />
+
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={openFilePicker}
+              style={{
+                border: "1px solid #222",
+                borderRadius: 10,
+                padding: "10px 12px",
+                background: "#fff",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              {formatFileLabel(file)}
+            </button>
+
+            {file && (
+              <button
+                type="button"
+                onClick={() => setFile(null)}
+                style={{
+                  border: "1px solid #ddd",
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
+            <div>
+              <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>
+                Right space (inches)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step={0.25}
+                value={extraRightIn}
+                onChange={(e) => setExtraRightIn(Number(e.target.value))}
+                style={{ width: "100%", padding: 8, borderRadius: 8, border: "1px solid #ddd" }}
+              />
+            </div>
+            <div>
+              <label style={{ display: "block", fontWeight: 600, marginBottom: 6 }}>
+                Bottom space (inches)
+              </label>
+              <input
+                type="number"
+                min={0}
+                step={0.25}
+                value={extraBottomIn}
+                onChange={(e) => setExtraBottomIn(Number(e.target.value))}
+                style={{ width: "100%", padding: 8, borderRadius: 8, border: "1px solid #ddd" }}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleConvert}
+            disabled={!canConvert}
+            style={{
+              marginTop: 16,
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "1px solid #111",
+              background: canConvert ? "#111" : "#999",
+              color: "#fff",
+              cursor: canConvert ? "pointer" : "default",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {isWorking ? "Working…" : "Convert and download"}
+          </button>
+
+          {error && <p style={{ marginTop: 12, color: "#b00020" }}>{error}</p>}
+
+          <p style={{ marginTop: 14, color: "#666", fontSize: 14 }}>
+            Your PDF is processed in your browser. Files are not uploaded to a server.
+          </p>
         </div>
-      </main>
-    </div>
+
+        <aside style={{ border: "1px solid #e6e6e6", borderRadius: 12, padding: 16 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Ad space</div>
+          <div style={{ color: "#666", fontSize: 14, lineHeight: 1.4 }}>
+            When you are approved for ads, you will paste your ad code here or into a dedicated component.
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              background: "#f6f6f6",
+              borderRadius: 10,
+              padding: 12,
+              color: "#777",
+              fontSize: 13,
+            }}
+          >
+            Placeholder box
+          </div>
+        </aside>
+      </section>
+
+      <footer style={{ marginTop: 22, color: "#777", fontSize: 13 }}>
+        <p style={{ margin: 0 }}>
+          Tip: if a PDF is already a scanned image, it will remain non searchable unless you OCR it.
+        </p>
+      </footer>
+    </main>
   );
 }
