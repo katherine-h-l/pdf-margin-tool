@@ -43,7 +43,6 @@ export default function Home() {
 
       const outBytes = await outPdf.save();
 
-      // Uint8Array version (keeps TypeScript happy on Vercel builds)
       const blob = new Blob([new Uint8Array(outBytes)], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
@@ -94,12 +93,48 @@ export default function Home() {
 
       <section style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
         <div style={{ border: "1px solid #e6e6e6", borderRadius: 12, padding: 16 }}>
+          <div
+            style={{
+              background: "#fafafa",
+              border: "1px solid #ededed",
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 14,
+              color: "#444",
+              lineHeight: 1.5,
+            }}
+          >
+            <p style={{ margin: 0 }}>
+              Give yourself extra space to annotate documents and lecture slides.
+            </p>
+            <p style={{ margin: "8px 0 0" }}>
+              Great for OneNote, RemNote, making Cornell Notes, and similar workflows.
+            </p>
+          </div>
+
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Upload PDF</label>
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              style={{
+                width: "100%",
+                padding: 10,
+                borderRadius: 10,
+                border: "1px solid #111",
+                background: "#fff",
+              }}
+            />
+          </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
             <div>
@@ -112,7 +147,13 @@ export default function Home() {
                 step={0.25}
                 value={extraRightIn}
                 onChange={(e) => setExtraRightIn(Number(e.target.value))}
-                style={{ width: "100%", padding: 8, borderRadius: 8, border: "1px solid #ddd" }}
+                style={{
+                  width: "100%",
+                  padding: 8,
+                  borderRadius: 10,
+                  border: "1px solid #111",
+                  background: "#fff",
+                }}
               />
             </div>
 
@@ -126,7 +167,13 @@ export default function Home() {
                 step={0.25}
                 value={extraBottomIn}
                 onChange={(e) => setExtraBottomIn(Number(e.target.value))}
-                style={{ width: "100%", padding: 8, borderRadius: 8, border: "1px solid #ddd" }}
+                style={{
+                  width: "100%",
+                  padding: 8,
+                  borderRadius: 10,
+                  border: "1px solid #111",
+                  background: "#fff",
+                }}
               />
             </div>
           </div>
@@ -142,6 +189,7 @@ export default function Home() {
               background: canConvert ? "#111" : "#999",
               color: "#fff",
               cursor: canConvert ? "pointer" : "default",
+              width: "100%",
             }}
           >
             {isWorking ? "Working…" : "Convert and download"}
@@ -168,6 +216,7 @@ export default function Home() {
               padding: 12,
               color: "#777",
               fontSize: 13,
+              border: "1px solid #ddd",
             }}
           >
             Placeholder box
