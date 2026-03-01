@@ -20,7 +20,24 @@
 }
 
 .file-input::file-selector-button {
-  font-weight: bold;
+  content: "Select PDF";
+  font-weight: 700;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: background 0.2s ease, transform 0.05s ease;
+}
+
+.file-input::file-selector-button:hover {
+  background: #b71c1c;
+}
+
+.file-input::file-selector-button:active {
+  transform: scale(0.97);
 }
 
 body {
