@@ -83,6 +83,12 @@ export default function Home() {
           <p style={{ margin: "6px 0 0", color: "#555" }}>
             Adds blank space on the right and bottom while keeping text searchable.
           </p>
+          <p style={{ margin: 0 }}>
+            Give yourself extra space to annotate documents and lecture slides.
+          </p>
+          <p style={{ margin: "8px 0 0" }}>
+            Great for OneNote, RemNote, making Cornell Notes, and similar workflows.
+          </p>
         </div>
 
         <nav style={{ display: "flex", gap: 12 }}>
@@ -104,12 +110,6 @@ export default function Home() {
               lineHeight: 1.5,
             }}
           >
-            <p style={{ margin: 0 }}>
-              Give yourself extra space to annotate documents and lecture slides.
-            </p>
-            <p style={{ margin: "8px 0 0" }}>
-              Great for OneNote, RemNote, making Cornell Notes, and similar workflows.
-            </p>
           </div>
 
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Upload PDF</label>
