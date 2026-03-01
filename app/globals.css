@@ -19,6 +19,10 @@
   }
 }
 
+.file-input::file-selector-button {
+  font-weight: bold;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
