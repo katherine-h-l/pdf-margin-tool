@@ -83,10 +83,10 @@ export default function Home() {
           <p style={{ margin: "6px 0 0", color: "#555" }}>
             Adds blank space on the right and bottom while keeping text searchable.
           </p>
-          <p style={{ margin: 0 }}>
+          <p style={{ margin: "6px 0 0", color: "#555" }}>
             Give yourself extra space to annotate documents and lecture slides.
           </p>
-          <p style={{ margin: "8px 0 0" }}>
+          <p style={{ margin: "6px 0 0", color: "#555" }}>
             Great for OneNote, RemNote, making Cornell Notes, and similar workflows.
           </p>
         </div>
@@ -99,18 +99,6 @@ export default function Home() {
 
       <section style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20 }}>
         <div style={{ border: "1px solid #e6e6e6", borderRadius: 12, padding: 16 }}>
-          <div
-            style={{
-              background: "#fafafa",
-              border: "1px solid #ededed",
-              borderRadius: 12,
-              padding: 12,
-              marginBottom: 14,
-              color: "#444",
-              lineHeight: 1.5,
-            }}
-          >
-          </div>
 
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Upload PDF</label>
 
